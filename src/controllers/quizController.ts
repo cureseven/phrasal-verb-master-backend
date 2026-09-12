@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { QuizService } from '../services/quizService.ts'; // 環境によっては .js や拡張子なし
+import { QuizService } from '../services/quizService.js';
 
 const quizService = new QuizService();
 
