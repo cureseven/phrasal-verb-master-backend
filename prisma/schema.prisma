@@ -1,0 +1,51 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model PhrasalVerb {
+  id              String   @id @default(uuid())
+  verb            String
+  particle        String
+  meaningJa       String   @map("meaning_ja")
+  exampleSentence String   @map("example_sentence")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  userPhraseStatuses UserPhraseStatus[]
+
+  @@map("phrasal_verbs")
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  userPhraseStatuses UserPhraseStatus[]
+
+  @@map("users")
+}
+
+enum LearningStatus {
+  MEMORIZED     @map("memorized")
+  REVIEW_NEEDED @map("review_needed")
+}
+
+model UserPhraseStatus {
+  id            String         @id @default(uuid())
+  userId        String         @map("user_id")
+  phrasalVerbId String         @map("phrasal_verb_id")
+  status        LearningStatus
+  updatedAt     DateTime       @updatedAt @map("updated_at")
+
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  phrasalVerb PhrasalVerb @relation(fields: [phrasalVerbId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, phrasalVerbId])
+  @@map("user_phrasal_verb_statuses")
+}

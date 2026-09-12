@@ -1,0 +1,35 @@
+import express from 'express';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import quizRoutes from './routes/quizRoutes.js';
+import { prisma } from './lib/prisma.js';
+
+dotenv.config();
+
+const app = express();
+const PORT = process.env.PORT || 3001;
+
+app.use(cors());
+app.use(express.json());
+
+// ヘルスチェック用ルート
+app.get('/health', (req, res) => {
+  res.json({ message: 'Phrasal Verb Master API is running!' });
+});
+
+// DB接続確認テスト用ルート
+app.get('/dbhealth', async (req, res) => {
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    res.json({ status: 'ok', database: 'connected' });
+  } catch (error) {
+    res.status(500).json({ status: 'error', message: 'Database connection failed' });
+  }
+});
+
+// ルーティング設定
+app.use('/api/quiz', quizRoutes);
+
+app.listen(PORT, () => {
+  console.log(`Server is running on http://localhost:${PORT}`);
+});
