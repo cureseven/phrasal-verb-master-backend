@@ -38,3 +38,18 @@ Detailed specifications are stored in the docs/ directory:
 - docs/api.txt          : API endpoints and request/response specifications
 - docs/database.txt     : Database schema, ER diagram, and table structures
 - docs/architecture.txt : 3-tier architecture rules and folder structure
+
+## 4. DATABASE SETUP & SEEDING
+
+To update or repopulate the database with phrasal verbs:
+
+1) Update Seed File
+
+Edit `prisma/seed.ts` to add or modify items in the `phrasalVerbsData` array.
+
+2) Run Seed Command
+
+Execute the seed script to reset and repopulate the database:
+```
+$ npx prisma db seed
+```
