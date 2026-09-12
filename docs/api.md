@@ -69,7 +69,7 @@ GET /api/verbs/:id
 ## 3. QUIZ SYSTEM (Quiz)
 
 GET /api/quiz/next
-- Description : Generate next quiz question based on weighted algorithm
+- Description : Generate next flashcard based on weighted algorithm
 - Query Params:
   - lastMode : "verb_fixed" | "particle_fixed"
   - lastWord : string (e.g. "take")
@@ -77,11 +77,13 @@ GET /api/quiz/next
   - 70% chance to maintain lastMode, 30% chance to switch.
 - Response (200 OK):
   {
+    "id": "uuid-1",
     "currentMode": "verb_fixed",
     "fixedWord": "take",
-    "question": "take ____ (意味: 離陸する、脱ぐ)",
-    "correctAnswer": "off",
-    "options": ["off", "on", "up", "away"]
+    "verb": "take",
+    "particle": "off",
+    "meaningJa": "離陸する、脱ぐ",
+    "exampleSentence": "The plane took off."
   }
 
 
