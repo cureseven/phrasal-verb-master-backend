@@ -83,7 +83,9 @@ export const me = async (req: Request, res: Response) => {
     select: { id: true, email: true },
   });
   if (!user) {
-    return res.status(404).json({ error: 'ユーザーが見つかりません。' });
+    // トークンは有効だがユーザーが削除済みなどのケース。クライアントには未認証として扱わせる。
+    res.clearCookie(AUTH_COOKIE_NAME, authCookieOptions());
+    return res.status(401).json({ error: '認証が必要です。' });
   }
   res.json({ user });
 };
