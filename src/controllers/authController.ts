@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { AuthError, AuthService } from '../services/authService.js';
+import { prisma } from '../lib/prisma.js';
 
 const authService = new AuthService();
 
@@ -70,4 +71,19 @@ export const login = async (req: Request, res: Response) => {
 export const logout = async (_req: Request, res: Response) => {
   res.clearCookie(AUTH_COOKIE_NAME, authCookieOptions());
   res.status(204).send();
+};
+
+export const me = async (req: Request, res: Response) => {
+  if (!req.userId) {
+    return res.status(401).json({ error: '認証が必要です。' });
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { id: req.userId },
+    select: { id: true, email: true },
+  });
+  if (!user) {
+    return res.status(404).json({ error: 'ユーザーが見つかりません。' });
+  }
+  res.json({ user });
 };
