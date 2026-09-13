@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import authRoutes from './routes/authRoutes.js';
 import quizRoutes from './routes/quizRoutes.js';
 import { prisma } from './lib/prisma.js';
 
@@ -9,7 +10,12 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-app.use(cors());
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+    credentials: true,
+  })
+);
 app.use(express.json());
 
 // ヘルスチェック用ルート
@@ -28,6 +34,7 @@ app.get('/dbhealth', async (req, res) => {
 });
 
 // ルーティング設定
+app.use('/api/auth', authRoutes);
 app.use('/api/quiz', quizRoutes);
 
 app.listen(PORT, () => {
