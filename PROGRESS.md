@@ -18,8 +18,7 @@
 ## タスク一覧
 
 ### フェーズ1: 認証基盤（最優先）
-- [ ] `auth-02-backend-auth-middleware`: backend — JWT検証ミドルウェア（`requireAuth`、Cookieから読み取るため`cookie-parser`が必要）の実装。進捗・マイページ等の要認証APIから利用する
-- [ ] `auth-03-frontend-login-signup-page`: frontend — SCR-04 ログイン/サインアップ画面（`/login`, `/signup`）とAPI連携
+- [ ] `auth-03-frontend-login-signup-page`: frontend — SCR-04 ログイン/サインアップ画面（`/login`, `/signup`）とAPI連携（実装中）
 - [ ] `auth-04-frontend-auth-state`: frontend — ログイン状態のグローバル管理（Context or SWR）、ログアウトボタン、未ログイン時のリダイレクト方針
 
 ### フェーズ2: 一覧・絞り込み（SCR-02）
@@ -41,3 +40,4 @@
 ## 完了ログ
 - `auth-01-backend-signup-login`: `POST /api/auth/signup`, `/login`, `/logout` を実装（logoutも同時に完了）。PR: https://github.com/cureseven/phrasal-verb-master-backend/pull/1 （マージ済み, 2026-09-13）
   - ⚠️ 人間の作業待ち: Renderの環境変数に `JWT_SECRET`（ランダムな長い文字列）と `FRONTEND_URL=https://phrasal-verb-master-frontend.vercel.app` の設定が必要。未設定だとlogin時に500エラーになる。
+- `auth-02-backend-auth-middleware`: `requireAuth`ミドルウェアと`GET /api/auth/me`を実装。PR: https://github.com/cureseven/phrasal-verb-master-backend/pull/2 （マージ済み, 2026-09-13）
