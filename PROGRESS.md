@@ -19,11 +19,7 @@
 
 ### フェーズ1: 認証基盤（最優先）— 完了 ✅
 
-### フェーズ2: 一覧・絞り込み（SCR-02）
-- [ ] `list-01-backend-verbs-endpoint`: backend — `GET /api/verbs`（verb/particle/statusクエリでの絞り込み）
-- [ ] `list-02-backend-verb-detail-related`: backend — `GET /api/verbs/:id`, `GET /api/verbs/related`
-- [ ] `list-03-frontend-list-page`: frontend — SCR-02 句動詞一覧画面（グリッド表示、動詞/前置詞ドロップダウン検索）
-- [ ] `list-04-frontend-status-filter`: frontend — 学習ステータスフィルター（要ログイン時のみ表示）
+### フェーズ2: 一覧・絞り込み（SCR-02）— 完了 ✅
 
 ### フェーズ3: SCR-01 Top/カード閲覧の本実装
 - [ ] `top-01-frontend-card-view`: frontend — `/`にSCR-01本来の仕様（訳の表示/非表示トグル、語句クリックでの切替）を実装。現状の`/quiz`とデバッグ用トップページを整理統合
@@ -42,3 +38,7 @@
 - `fix-me-401`: 削除済みユーザーのCookieで`/me`が404を返す不整合を401に修正。PR: https://github.com/cureseven/phrasal-verb-master-backend/pull/3 （マージ済み, 2026-09-13）
 - `auth-03-frontend-login-signup-page`: `/login`, `/signup`画面を実装。PR: https://github.com/cureseven/phrasal-verb-master-frontend/pull/1 （マージ済み, 2026-09-13）
 - `auth-04-frontend-auth-state`: `AuthContext`によるログイン状態管理、全ページ共通ヘッダー、ログアウトボタンを実装。PR: https://github.com/cureseven/phrasal-verb-master-frontend/pull/2 （マージ済み, 2026-09-13）
+- `list-01-backend-verbs-endpoint`: `GET /api/verbs`（verb/particle/status絞り込み、optionalAuth追加）。PR: https://github.com/cureseven/phrasal-verb-master-backend/pull/4 （マージ済み, 2026-09-13）
+- `list-02-backend-verb-detail-related`: `GET /api/verbs/:id`, `GET /api/verbs/related`。PR: https://github.com/cureseven/phrasal-verb-master-backend/pull/5 （マージ済み, 2026-09-13）
+- `list-03-frontend-list-page`: `/list`画面（グリッド表示、動詞/前置詞ドロップダウン）。PR: https://github.com/cureseven/phrasal-verb-master-frontend/pull/3 （マージ済み, 2026-09-13）
+- `list-04-frontend-status-filter`: 学習ステータスフィルター（要ログイン）。PR: https://github.com/cureseven/phrasal-verb-master-frontend/pull/4 （マージ済み, 2026-09-13）
