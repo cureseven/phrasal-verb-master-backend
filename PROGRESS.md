@@ -21,15 +21,13 @@
 
 ### フェーズ2: 一覧・絞り込み（SCR-02）— 完了 ✅
 
-### フェーズ3: SCR-01 Top/カード閲覧の本実装
-- [ ] `top-01-frontend-card-view`: frontend — `/`にSCR-01本来の仕様（訳の表示/非表示トグル、語句クリックでの切替）を実装。現状の`/quiz`とデバッグ用トップページを整理統合
-- [ ] `top-02-frontend-related-word-switch`: frontend — カード上の動詞/副詞・前置詞クリックで`GET /api/verbs/related`を使った切替に対応（現状の`/quiz`はマルコフ連鎖のランダム出題のみ）
+### フェーズ3: SCR-01 Top/カード閲覧の本実装 — 完了 ✅
 
-### フェーズ4: クイズ・進捗（SCR-03, SCR-05, 要認証）
-- [ ] `quiz-01-backend-progress-mark`: backend — `POST /api/progress/mark`（要認証）
-- [ ] `quiz-02-backend-progress-summary`: backend — `GET /api/progress/summary`（要認証）
-- [ ] `quiz-03-frontend-quiz-auth-gate`: frontend — SCR-03を要ログインにし、「覚えた/覚えてない」ボタンから`/api/progress/mark`を呼ぶ
-- [ ] `quiz-04-frontend-mypage`: frontend — SCR-05 マイページ（進捗率、覚えてない句動詞の再テスト導線）
+### フェーズ4: クイズ・進捗（SCR-03, SCR-05, 要認証）— 完了 ✅
+
+## 仕様書の全機能が実装完了（2026-09-13）
+PHRASAL_VERB_MASTER_SPEC.mdのFunctional Requirements・画面リスト（SCR-01〜05）は全て実装済み。
+今後は新機能追加ではなく、品質改善・運用対応のフェーズ。詳細は「残タスク・懸念事項」を参照。
 
 ## 完了ログ
 - `auth-01-backend-signup-login`: `POST /api/auth/signup`, `/login`, `/logout` を実装（logoutも同時に完了）。PR: https://github.com/cureseven/phrasal-verb-master-backend/pull/1 （マージ済み, 2026-09-13）
@@ -42,3 +40,14 @@
 - `list-02-backend-verb-detail-related`: `GET /api/verbs/:id`, `GET /api/verbs/related`。PR: https://github.com/cureseven/phrasal-verb-master-backend/pull/5 （マージ済み, 2026-09-13）
 - `list-03-frontend-list-page`: `/list`画面（グリッド表示、動詞/前置詞ドロップダウン）。PR: https://github.com/cureseven/phrasal-verb-master-frontend/pull/3 （マージ済み, 2026-09-13）
 - `list-04-frontend-status-filter`: 学習ステータスフィルター（要ログイン）。PR: https://github.com/cureseven/phrasal-verb-master-frontend/pull/4 （マージ済み, 2026-09-13）
+- `top-01-frontend-card-view` / `top-02-frontend-related-word-switch`: `/`をSCR-01本来の仕様に置き換え（訳表示トグル、`GET /api/verbs/related`を使った語句クリック切替）、デバッグ用トップページを廃止しナビゲーションをヘッダーに移設。PR: https://github.com/cureseven/phrasal-verb-master-frontend/pull/5 （マージ済み, 2026-09-13）
+- `quiz-01-backend-progress-mark` / `quiz-02-backend-progress-summary`: `POST /api/progress/mark`, `GET /api/progress/summary`を実装。PR: https://github.com/cureseven/phrasal-verb-master-backend/pull/6 （マージ済み, 2026-09-13）
+  - 実装中に発見・修正したバグ: PrismaのLearningStatus enumはランタイム値がキー名(`MEMORIZED`等)になり、API仕様の文字列(`memorized`等)と直接比較すると常に不一致になっていた。変換マップで解消。
+- `quiz-03-frontend-quiz-auth-gate`: `/quiz`を要ログイン化し、「覚えた/覚えてない」ボタンから`/api/progress/mark`を呼ぶように実装。PR: https://github.com/cureseven/phrasal-verb-master-frontend/pull/6 （マージ済み, 2026-09-13）
+- `quiz-04-frontend-mypage`: マイページ（進捗率、覚えてない句動詞への再テストショートカット）を実装。PR: https://github.com/cureseven/phrasal-verb-master-frontend/pull/7 （マージ済み, 2026-09-13）
+
+## 残タスク・懸念事項（人間の判断待ち）
+- ⚠️ **Render環境変数が未設定**: `JWT_SECRET`（ランダムな長い文字列）と`FRONTEND_URL=https://phrasal-verb-master-frontend.vercel.app`。未設定だと本番でログインが500エラーになる。
+- スタッシュに退避したまま放置している変更あり（backendリポジトリ）: `prisma/schema.prisma`へのdirectUrl追加、`create_tables.sql`、`package.json`のseedスクリプト変更。`git stash list`で確認できる。今回のタスクとは無関係な既存の作業中変更と判断し、意図的に触れていない。
+- ブランチ保護の`strict`（マージ前にmainと同期必須）は両リポジトリでfalseに変更済み。並行してPRを進める運用と相性が悪かったため。
+- 仕様書に無いが実装上の判断で追加したもの: `GET /api/auth/me`（ログイン状態確認用）、`optionalAuth`ミドルウェア、`/list`ページの`?status=`クエリパラメータ対応（マイページからのディープリンク用）。
