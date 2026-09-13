@@ -4,6 +4,7 @@ import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 import authRoutes from './routes/authRoutes.js';
 import quizRoutes from './routes/quizRoutes.js';
+import verbsRoutes from './routes/verbsRoutes.js';
 import { prisma } from './lib/prisma.js';
 
 dotenv.config();
@@ -38,6 +39,7 @@ app.get('/dbhealth', async (req, res) => {
 // ルーティング設定
 app.use('/api/auth', authRoutes);
 app.use('/api/quiz', quizRoutes);
+app.use('/api/verbs', verbsRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);

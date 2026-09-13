@@ -1,0 +1,40 @@
+import { LearningStatus, Prisma } from '@prisma/client';
+import { prisma } from '../lib/prisma.js';
+
+const STATUS_MAP: Record<string, LearningStatus> = {
+  memorized: LearningStatus.MEMORIZED,
+  review_needed: LearningStatus.REVIEW_NEEDED,
+};
+
+export interface ListVerbsParams {
+  verb?: string;
+  particle?: string;
+  status?: string;
+  userId?: string;
+}
+
+export class VerbsService {
+  async list({ verb, particle, status, userId }: ListVerbsParams) {
+    const where: Prisma.PhrasalVerbWhereInput = {};
+
+    if (verb) {
+      where.verb = verb;
+    }
+    if (particle) {
+      where.particle = particle;
+    }
+
+    // ステータスフィルターはログインユーザーのみ有効。未ログインなら無視する。
+    const learningStatus = status ? STATUS_MAP[status] : undefined;
+    if (learningStatus && userId) {
+      where.userPhraseStatuses = {
+        some: { userId, status: learningStatus },
+      };
+    }
+
+    return prisma.phrasalVerb.findMany({
+      where,
+      orderBy: [{ verb: 'asc' }, { particle: 'asc' }],
+    });
+  }
+}
