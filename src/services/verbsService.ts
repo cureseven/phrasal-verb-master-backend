@@ -37,4 +37,15 @@ export class VerbsService {
       orderBy: [{ verb: 'asc' }, { particle: 'asc' }],
     });
   }
+
+  async getById(id: string) {
+    return prisma.phrasalVerb.findUnique({ where: { id } });
+  }
+
+  async getRelated(type: 'verb' | 'particle', value: string) {
+    return prisma.phrasalVerb.findMany({
+      where: type === 'verb' ? { verb: value } : { particle: value },
+      orderBy: [{ verb: 'asc' }, { particle: 'asc' }],
+    });
+  }
 }
