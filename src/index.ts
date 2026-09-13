@@ -3,6 +3,7 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 import authRoutes from './routes/authRoutes.js';
+import progressRoutes from './routes/progressRoutes.js';
 import quizRoutes from './routes/quizRoutes.js';
 import verbsRoutes from './routes/verbsRoutes.js';
 import { prisma } from './lib/prisma.js';
@@ -40,6 +41,7 @@ app.get('/dbhealth', async (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/quiz', quizRoutes);
 app.use('/api/verbs', verbsRoutes);
+app.use('/api/progress', progressRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
