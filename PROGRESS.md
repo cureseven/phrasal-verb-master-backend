@@ -17,9 +17,7 @@
 
 ## タスク一覧
 
-### フェーズ1: 認証基盤（最優先）
-- [ ] `auth-03-frontend-login-signup-page`: frontend — SCR-04 ログイン/サインアップ画面（`/login`, `/signup`）とAPI連携（実装中）
-- [ ] `auth-04-frontend-auth-state`: frontend — ログイン状態のグローバル管理（Context or SWR）、ログアウトボタン、未ログイン時のリダイレクト方針
+### フェーズ1: 認証基盤（最優先）— 完了 ✅
 
 ### フェーズ2: 一覧・絞り込み（SCR-02）
 - [ ] `list-01-backend-verbs-endpoint`: backend — `GET /api/verbs`（verb/particle/statusクエリでの絞り込み）
@@ -41,3 +39,6 @@
 - `auth-01-backend-signup-login`: `POST /api/auth/signup`, `/login`, `/logout` を実装（logoutも同時に完了）。PR: https://github.com/cureseven/phrasal-verb-master-backend/pull/1 （マージ済み, 2026-09-13）
   - ⚠️ 人間の作業待ち: Renderの環境変数に `JWT_SECRET`（ランダムな長い文字列）と `FRONTEND_URL=https://phrasal-verb-master-frontend.vercel.app` の設定が必要。未設定だとlogin時に500エラーになる。
 - `auth-02-backend-auth-middleware`: `requireAuth`ミドルウェアと`GET /api/auth/me`を実装。PR: https://github.com/cureseven/phrasal-verb-master-backend/pull/2 （マージ済み, 2026-09-13）
+- `fix-me-401`: 削除済みユーザーのCookieで`/me`が404を返す不整合を401に修正。PR: https://github.com/cureseven/phrasal-verb-master-backend/pull/3 （マージ済み, 2026-09-13）
+- `auth-03-frontend-login-signup-page`: `/login`, `/signup`画面を実装。PR: https://github.com/cureseven/phrasal-verb-master-frontend/pull/1 （マージ済み, 2026-09-13）
+- `auth-04-frontend-auth-state`: `AuthContext`によるログイン状態管理、全ページ共通ヘッダー、ログアウトボタンを実装。PR: https://github.com/cureseven/phrasal-verb-master-frontend/pull/2 （マージ済み, 2026-09-13）
