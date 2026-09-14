@@ -1,8 +1,10 @@
 import { Request, Response } from 'express';
 import { AdminService } from '../services/adminService.js';
+import { VerbsService } from '../services/verbsService.js';
 import { prisma } from '../lib/prisma.js';
 
 const adminService = new AdminService();
+const verbsService = new VerbsService();
 
 export const getStats = async (_req: Request, res: Response) => {
   try {
@@ -46,3 +48,22 @@ async function updateReadOnly(req: Request, res: Response, isReadOnly: boolean) 
 
 export const restrictUser = (req: Request, res: Response) => updateReadOnly(req, res, true);
 export const unrestrictUser = (req: Request, res: Response) => updateReadOnly(req, res, false);
+
+export const createVerb = async (req: Request, res: Response) => {
+  const { verb, particle, meaningJa, exampleSentence } = req.body ?? {};
+  const fields = { verb, particle, meaningJa, exampleSentence };
+
+  for (const [key, value] of Object.entries(fields)) {
+    if (typeof value !== 'string' || !value.trim()) {
+      return res.status(400).json({ error: `${key}は必須です。` });
+    }
+  }
+
+  try {
+    const created = await verbsService.create({ verb, particle, meaningJa, exampleSentence });
+    res.status(201).json(created);
+  } catch (error) {
+    console.error('createVerb failed:', error);
+    res.status(500).json({ error: '句動詞の登録に失敗しました。' });
+  }
+};

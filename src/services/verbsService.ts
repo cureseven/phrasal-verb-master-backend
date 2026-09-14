@@ -42,6 +42,15 @@ export class VerbsService {
     return prisma.phrasalVerb.findUnique({ where: { id } });
   }
 
+  async create(data: {
+    verb: string;
+    particle: string;
+    meaningJa: string;
+    exampleSentence: string;
+  }) {
+    return prisma.phrasalVerb.create({ data });
+  }
+
   async getRelated(type: 'verb' | 'particle', value: string) {
     return prisma.phrasalVerb.findMany({
       where: type === 'verb' ? { verb: value } : { particle: value },

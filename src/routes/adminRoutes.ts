@@ -1,5 +1,11 @@
 import { Router } from 'express';
-import { getStats, listUsers, restrictUser, unrestrictUser } from '../controllers/adminController.js';
+import {
+  createVerb,
+  getStats,
+  listUsers,
+  restrictUser,
+  unrestrictUser,
+} from '../controllers/adminController.js';
 import { requireAdminAuth } from '../middleware/requireAdminAuth.js';
 
 const router = Router();
@@ -10,5 +16,6 @@ router.get('/stats', getStats);
 router.get('/users', listUsers);
 router.post('/users/:id/restrict', restrictUser);
 router.post('/users/:id/unrestrict', unrestrictUser);
+router.post('/verbs', createVerb);
 
 export default router;
