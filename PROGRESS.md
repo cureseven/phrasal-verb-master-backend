@@ -31,7 +31,7 @@ PHRASAL_VERB_MASTER_SPEC.mdのFunctional Requirements・画面リスト（SCR-01
 
 ## 完了ログ
 - `auth-01-backend-signup-login`: `POST /api/auth/signup`, `/login`, `/logout` を実装（logoutも同時に完了）。PR: https://github.com/cureseven/phrasal-verb-master-backend/pull/1 （マージ済み, 2026-09-13）
-  - ⚠️ 人間の作業待ち: Renderの環境変数に `JWT_SECRET`（ランダムな長い文字列）と `FRONTEND_URL=https://phrasal-verb-master-frontend.vercel.app` の設定が必要。未設定だとlogin時に500エラーになる。
+  - ✅ Renderの環境変数`JWT_SECRET`/`FRONTEND_URL`は設定済み（2026-09-13対応済み）。
 - `auth-02-backend-auth-middleware`: `requireAuth`ミドルウェアと`GET /api/auth/me`を実装。PR: https://github.com/cureseven/phrasal-verb-master-backend/pull/2 （マージ済み, 2026-09-13）
 - `fix-me-401`: 削除済みユーザーのCookieで`/me`が404を返す不整合を401に修正。PR: https://github.com/cureseven/phrasal-verb-master-backend/pull/3 （マージ済み, 2026-09-13）
 - `auth-03-frontend-login-signup-page`: `/login`, `/signup`画面を実装。PR: https://github.com/cureseven/phrasal-verb-master-frontend/pull/1 （マージ済み, 2026-09-13）
@@ -45,9 +45,12 @@ PHRASAL_VERB_MASTER_SPEC.mdのFunctional Requirements・画面リスト（SCR-01
   - 実装中に発見・修正したバグ: PrismaのLearningStatus enumはランタイム値がキー名(`MEMORIZED`等)になり、API仕様の文字列(`memorized`等)と直接比較すると常に不一致になっていた。変換マップで解消。
 - `quiz-03-frontend-quiz-auth-gate`: `/quiz`を要ログイン化し、「覚えた/覚えてない」ボタンから`/api/progress/mark`を呼ぶように実装。PR: https://github.com/cureseven/phrasal-verb-master-frontend/pull/6 （マージ済み, 2026-09-13）
 - `quiz-04-frontend-mypage`: マイページ（進捗率、覚えてない句動詞への再テストショートカット）を実装。PR: https://github.com/cureseven/phrasal-verb-master-frontend/pull/7 （マージ済み, 2026-09-13）
+- `fix-quiz-click-mode`: クイズ/トップページの語句クリックが70%の確率で無視される不整合を修正し、両ページとも「クリックした方が変わる」に統一。PR: backend不要、frontend PR#10, #11（マージ済み, 2026-09-13〜14）
+- `logo-favicon`: 鏡餅モチーフの暖色ロゴを追加。frontend PR#8, #9（マージ済み, 2026-09-13）
+- `admin-dashboard`: 管理者機能（読み取り専用化・全体進捗集計）を追加。管理者は`admins`テーブルで分離、読み取り専用状態は`UserAccountStatus`テーブルに正規化。管理画面は`(admin)/[adminSlug]`配下の推測困難なURLに独立レイアウトで配置。backend PR#7, frontend PR#12（マージ済み, 2026-09-14）
+  - ⚠️ 人間の作業待ち: 本番Supabase DBへの`npx prisma migrate deploy`実行、本番`npm run seed:admin`での初回管理者作成、Vercelへの`ADMIN_URL_SLUG`環境変数設定（すべて未対応）。
 
 ## 残タスク・懸念事項（人間の判断待ち）
-- ⚠️ **Render環境変数が未設定**: `JWT_SECRET`（ランダムな長い文字列）と`FRONTEND_URL=https://phrasal-verb-master-frontend.vercel.app`。未設定だと本番でログインが500エラーになる。
 - スタッシュに退避したまま放置している変更あり（backendリポジトリ）: `prisma/schema.prisma`へのdirectUrl追加、`create_tables.sql`、`package.json`のseedスクリプト変更。`git stash list`で確認できる。今回のタスクとは無関係な既存の作業中変更と判断し、意図的に触れていない。
 - ブランチ保護の`strict`（マージ前にmainと同期必須）は両リポジトリでfalseに変更済み。並行してPRを進める運用と相性が悪かったため。
-- 仕様書に無いが実装上の判断で追加したもの: `GET /api/auth/me`（ログイン状態確認用）、`optionalAuth`ミドルウェア、`/list`ページの`?status=`クエリパラメータ対応（マイページからのディープリンク用）。
+- 仕様書に無いが実装上の判断で追加したもの: `GET /api/auth/me`（ログイン状態確認用）、`optionalAuth`ミドルウェア、`/list`ページの`?status=`クエリパラメータ対応（マイページからのディープリンク用）、管理者機能一式（`admins`/`UserAccountStatus`テーブル、`/api/admin/*`、`(admin)/[adminSlug]`）。
