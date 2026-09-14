@@ -27,8 +27,29 @@ model User {
   createdAt    DateTime @default(now()) @map("created_at")
 
   userPhraseStatuses UserPhraseStatus[]
+  accountStatus      UserAccountStatus?
 
   @@map("users")
+}
+
+model Admin {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@map("admins")
+}
+
+model UserAccountStatus {
+  id         String   @id @default(uuid())
+  userId     String   @unique @map("user_id")
+  isReadOnly Boolean  @default(false) @map("is_read_only")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_account_statuses")
 }
 
 enum LearningStatus {
