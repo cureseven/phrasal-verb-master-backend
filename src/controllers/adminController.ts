@@ -67,3 +67,51 @@ export const createVerb = async (req: Request, res: Response) => {
     res.status(500).json({ error: '句動詞の登録に失敗しました。' });
   }
 };
+
+export const updateVerb = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { meaningJa, exampleSentence } = req.body ?? {};
+
+  if (typeof id !== 'string') {
+    return res.status(400).json({ error: '不正なIDです。' });
+  }
+  if (
+    typeof meaningJa !== 'string' ||
+    !meaningJa.trim() ||
+    typeof exampleSentence !== 'string' ||
+    !exampleSentence.trim()
+  ) {
+    return res.status(400).json({ error: '意味と例文は必須です。' });
+  }
+
+  try {
+    const existing = await verbsService.getById(id);
+    if (!existing) {
+      return res.status(404).json({ error: '句動詞が見つかりません。' });
+    }
+    const updated = await verbsService.update(id, { meaningJa, exampleSentence });
+    res.json(updated);
+  } catch (error) {
+    console.error('updateVerb failed:', error);
+    res.status(500).json({ error: '更新に失敗しました。' });
+  }
+};
+
+export const deleteVerb = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  if (typeof id !== 'string') {
+    return res.status(400).json({ error: '不正なIDです。' });
+  }
+
+  try {
+    const existing = await verbsService.getById(id);
+    if (!existing) {
+      return res.status(404).json({ error: '句動詞が見つかりません。' });
+    }
+    await verbsService.delete(id);
+    res.status(204).send();
+  } catch (error) {
+    console.error('deleteVerb failed:', error);
+    res.status(500).json({ error: '削除に失敗しました。' });
+  }
+};
