@@ -34,7 +34,7 @@ export class AuthService {
       data: { email, passwordHash },
     });
 
-    return { id: user.id, email: user.email };
+    return { id: user.id, email: user.email, username: user.username };
   }
 
   async login(email: string, password: string) {
@@ -52,6 +52,15 @@ export class AuthService {
       expiresIn: JWT_EXPIRES_IN,
     });
 
-    return { token, user: { id: user.id, email: user.email } };
+    return { token, user: { id: user.id, email: user.email, username: user.username } };
+  }
+
+  async updateUsername(userId: string, username: string) {
+    const user = await prisma.user.update({
+      where: { id: userId },
+      data: { username },
+    });
+
+    return { id: user.id, email: user.email, username: user.username };
   }
 }

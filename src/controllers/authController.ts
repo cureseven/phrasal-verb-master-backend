@@ -8,6 +8,7 @@ export const AUTH_COOKIE_NAME = 'pvm_token';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MIN_PASSWORD_LENGTH = 8;
+const MAX_USERNAME_LENGTH = 30;
 
 function validateCredentials(email: unknown, password: unknown): string | null {
   if (typeof email !== 'string' || !EMAIL_REGEX.test(email)) {
@@ -80,7 +81,7 @@ export const me = async (req: Request, res: Response) => {
 
   const user = await prisma.user.findUnique({
     where: { id: req.userId },
-    select: { id: true, email: true },
+    select: { id: true, email: true, username: true },
   });
   if (!user) {
     // トークンは有効だがユーザーが削除済みなどのケース。クライアントには未認証として扱わせる。
@@ -88,4 +89,27 @@ export const me = async (req: Request, res: Response) => {
     return res.status(401).json({ error: '認証が必要です。' });
   }
   res.json({ user });
+};
+
+export const updateUsername = async (req: Request, res: Response) => {
+  if (!req.userId) {
+    return res.status(401).json({ error: '認証が必要です。' });
+  }
+
+  const { username } = req.body ?? {};
+  if (typeof username !== 'string' || !username.trim()) {
+    return res.status(400).json({ error: 'ユーザー名を入力してください。' });
+  }
+  const trimmed = username.trim();
+  if (trimmed.length > MAX_USERNAME_LENGTH) {
+    return res.status(400).json({ error: `ユーザー名は${MAX_USERNAME_LENGTH}文字以内で入力してください。` });
+  }
+
+  try {
+    const user = await authService.updateUsername(req.userId, trimmed);
+    res.json({ user });
+  } catch (error) {
+    console.error('updateUsername failed:', error);
+    res.status(500).json({ error: 'ユーザー名の更新に失敗しました。' });
+  }
 };
