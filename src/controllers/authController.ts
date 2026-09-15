@@ -113,3 +113,26 @@ export const updateUsername = async (req: Request, res: Response) => {
     res.status(500).json({ error: 'ユーザー名の更新に失敗しました。' });
   }
 };
+
+export const deleteAccount = async (req: Request, res: Response) => {
+  if (!req.userId) {
+    return res.status(401).json({ error: '認証が必要です。' });
+  }
+
+  const { password } = req.body ?? {};
+  if (typeof password !== 'string' || !password) {
+    return res.status(400).json({ error: 'パスワードを入力してください。' });
+  }
+
+  try {
+    await authService.deleteAccount(req.userId, password);
+    res.clearCookie(AUTH_COOKIE_NAME, authCookieOptions());
+    res.status(204).send();
+  } catch (error) {
+    if (error instanceof AuthError) {
+      return res.status(error.status).json({ error: error.message });
+    }
+    console.error('deleteAccount failed:', error);
+    res.status(500).json({ error: 'アカウントの削除に失敗しました。' });
+  }
+};

@@ -63,4 +63,18 @@ export class AuthService {
 
     return { id: user.id, email: user.email, username: user.username };
   }
+
+  async deleteAccount(userId: string, password: string) {
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      throw new AuthError('ユーザーが見つかりません。', 404);
+    }
+
+    const isValid = await bcrypt.compare(password, user.passwordHash);
+    if (!isValid) {
+      throw new AuthError('パスワードが正しくありません。', 401);
+    }
+
+    await prisma.user.delete({ where: { id: userId } });
+  }
 }
