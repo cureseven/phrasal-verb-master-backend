@@ -49,8 +49,10 @@ PHRASAL_VERB_MASTER_SPEC.mdのFunctional Requirements・画面リスト（SCR-01
 - `logo-favicon`: 鏡餅モチーフの暖色ロゴを追加。frontend PR#8, #9（マージ済み, 2026-09-13）
 - `admin-dashboard`: 管理者機能（読み取り専用化・全体進捗集計）を追加。管理者は`admins`テーブルで分離、読み取り専用状態は`UserAccountStatus`テーブルに正規化。管理画面は`(admin)/[adminSlug]`配下の推測困難なURLに独立レイアウトで配置。backend PR#7, frontend PR#12（マージ済み, 2026-09-14）
   - ⚠️ 人間の作業待ち: 本番Supabase DBへの`npx prisma migrate deploy`実行、本番`npm run seed:admin`での初回管理者作成、Vercelへの`ADMIN_URL_SLUG`環境変数設定（すべて未対応）。
+- `admin-subdomain-migration`: 本番ドメインが`phrasalverb.cureseven.tokyo`に確定したのに合わせ、管理画面を`admin.phrasalverb.cureseven.tokyo`サブドメインに切り出し。`(admin)/[adminSlug]`の推測困難URL方式を廃止し、`(admin)/admin/*`の固定パスに変更。同一Vercelプロジェクトのまま`src/proxy.ts`（Next.js 16でmiddlewareから名称変更）でホスト名判定し、admin.サブドメインでは`/`等のクリーンなパスを内部的に`/admin/*`へリライト、逆にメインドメインからの`/admin/*`直接アクセスは404にして到達不可にする。backendのCORSはカンマ区切りで複数オリジン（メインドメイン・adminサブドメイン）を許可するよう変更。backend PR#11, frontend PR#21（マージ済み, 2026-09-15）
+  - ⚠️ 人間の作業待ち: Vercelプロジェクトに`admin.phrasalverb.cureseven.tokyo`ドメインを追加（DNS設定含む）、Renderの`FRONTEND_URL`をカンマ区切りで両ドメインに更新、Vercelの`ADMIN_URL_SLUG`環境変数は不要になったため削除して問題ない。
 
 ## 残タスク・懸念事項（人間の判断待ち）
 - スタッシュに退避したまま放置している変更あり（backendリポジトリ）: `prisma/schema.prisma`へのdirectUrl追加、`create_tables.sql`、`package.json`のseedスクリプト変更。`git stash list`で確認できる。今回のタスクとは無関係な既存の作業中変更と判断し、意図的に触れていない。
 - ブランチ保護の`strict`（マージ前にmainと同期必須）は両リポジトリでfalseに変更済み。並行してPRを進める運用と相性が悪かったため。
-- 仕様書に無いが実装上の判断で追加したもの: `GET /api/auth/me`（ログイン状態確認用）、`optionalAuth`ミドルウェア、`/list`ページの`?status=`クエリパラメータ対応（マイページからのディープリンク用）、管理者機能一式（`admins`/`UserAccountStatus`テーブル、`/api/admin/*`、`(admin)/[adminSlug]`）。
+- 仕様書に無いが実装上の判断で追加したもの: `GET /api/auth/me`（ログイン状態確認用）、`optionalAuth`ミドルウェア、`/list`ページの`?status=`クエリパラメータ対応（マイページからのディープリンク用）、管理者機能一式（`admins`/`UserAccountStatus`テーブル、`/api/admin/*`、`admin.`サブドメイン + `src/proxy.ts`によるホスト名ベースのルーティング分離）。
