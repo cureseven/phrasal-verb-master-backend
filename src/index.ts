@@ -15,9 +15,21 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+// FRONTEND_URLはカンマ区切りで複数オリジンを指定できる（メインドメインと管理画面用サブドメインなど）
+const allowedOrigins = (process.env.FRONTEND_URL || 'http://localhost:3000')
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('CORSで許可されていないオリジンです。'));
+      }
+    },
     credentials: true,
   })
 );
