@@ -8,16 +8,30 @@ generator client {
 }
 
 model PhrasalVerb {
-  id              String   @id @default(uuid())
-  verb            String
-  particle        String
-  meaningJa       String   @map("meaning_ja")
-  exampleSentence String   @map("example_sentence")
-  createdAt       DateTime @default(now()) @map("created_at")
+  id         String   @id @default(uuid())
+  verb       String
+  particle   String
+  meaningJa  String   @map("meaning_ja")
+  createdAt  DateTime @default(now()) @map("created_at")
 
   userPhraseStatuses UserPhraseStatus[]
+  examples           PhrasalVerbExample[]
 
   @@map("phrasal_verbs")
+}
+
+model PhrasalVerbExample {
+  id            String   @id @default(uuid())
+  phrasalVerbId String   @map("phrasal_verb_id")
+  sentenceEn    String   @map("sentence_en")
+  sentenceJa    String   @map("sentence_ja")
+  order         Int
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  phrasalVerb PhrasalVerb @relation(fields: [phrasalVerbId], references: [id], onDelete: Cascade)
+
+  @@unique([phrasalVerbId, order])
+  @@map("phrasal_verb_examples")
 }
 
 model User {

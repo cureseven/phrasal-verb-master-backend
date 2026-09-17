@@ -51,6 +51,8 @@ PHRASAL_VERB_MASTER_SPEC.mdのFunctional Requirements・画面リスト（SCR-01
   - ⚠️ 人間の作業待ち: 本番Supabase DBへの`npx prisma migrate deploy`実行、本番`npm run seed:admin`での初回管理者作成、Vercelへの`ADMIN_URL_SLUG`環境変数設定（すべて未対応）。
 - `admin-subdomain-migration`: 本番ドメインが`phrasalverb.cureseven.tokyo`に確定したのに合わせ、管理画面を`admin.phrasalverb.cureseven.tokyo`サブドメインに切り出し。`(admin)/[adminSlug]`の推測困難URL方式を廃止し、`(admin)/admin/*`の固定パスに変更。同一Vercelプロジェクトのまま`src/proxy.ts`（Next.js 16でmiddlewareから名称変更）でホスト名判定し、admin.サブドメインでは`/`等のクリーンなパスを内部的に`/admin/*`へリライト、逆にメインドメインからの`/admin/*`直接アクセスは404にして到達不可にする。backendのCORSはカンマ区切りで複数オリジン（メインドメイン・adminサブドメイン）を許可するよう変更。backend PR#11, frontend PR#21（マージ済み, 2026-09-15）
   - ⚠️ 人間の作業待ち: Vercelプロジェクトに`admin.phrasalverb.cureseven.tokyo`ドメインを追加（DNS設定含む）、Renderの`FRONTEND_URL`をカンマ区切りで両ドメインに更新、Vercelの`ADMIN_URL_SLUG`環境変数は不要になったため削除して問題ない。
+- `multiple-examples`: 各句動詞の例文を1つから3つに増やし、例文ごとの日本語訳もDBに保存するように変更。`phrasal_verbs.example_sentence`カラムを廃止し、正規化した`PhrasalVerbExample`テーブル（`sentence_en`/`sentence_ja`/`order`、`onDelete: Cascade`）に移行。既存182件の句動詞は、既存の例文の日本語訳＋新規2例文をAIで生成し`prisma/backfillExamples.ts`（非破壊的・idempotent、verb+particleで既存行に紐付け）でバックフィル。`prisma/seed.ts`と`backfillExamples.ts`はデータ重複を避けるため共有データファイル`prisma/phrasalVerbsData.ts`を参照する構成に変更。フロント側はフラッシュカード/クイズ画面で3例文＋日本語訳を全て表示、一覧画面・管理画面一覧は先頭の例文のみ表示、管理画面の登録/編集フォームは3例文×英文/日本語訳の入力欄に変更。backend PR#14, frontend PR#27（マージ済み予定）
+  - ⚠️ 人間の作業待ち: 本番マイグレーション適用の順序が重要（① `phrasal_verb_examples`テーブル追加 → ② `npm run backfill:examples`を本番DBに対して実行 → ③ `example_sentence`カラム削除、の3ステップを必ずこの順で。②を飛ばして③を先に適用すると例文データが失われる）。
 
 ## 残タスク・懸念事項（人間の判断待ち）
 - スタッシュに退避したまま放置している変更あり（backendリポジトリ）: `prisma/schema.prisma`へのdirectUrl追加、`create_tables.sql`、`package.json`のseedスクリプト変更。`git stash list`で確認できる。今回のタスクとは無関係な既存の作業中変更と判断し、意図的に触れていない。
