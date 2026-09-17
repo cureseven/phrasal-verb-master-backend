@@ -49,9 +49,35 @@ async function updateReadOnly(req: Request, res: Response, isReadOnly: boolean) 
 export const restrictUser = (req: Request, res: Response) => updateReadOnly(req, res, true);
 export const unrestrictUser = (req: Request, res: Response) => updateReadOnly(req, res, false);
 
+const EXAMPLE_COUNT = 3;
+
+function parseExamples(examples: unknown): { sentenceEn: string; sentenceJa: string }[] | null {
+  if (!Array.isArray(examples) || examples.length !== EXAMPLE_COUNT) {
+    return null;
+  }
+  const parsed: { sentenceEn: string; sentenceJa: string }[] = [];
+  for (const ex of examples) {
+    if (
+      typeof ex !== 'object' ||
+      ex === null ||
+      typeof (ex as Record<string, unknown>).sentenceEn !== 'string' ||
+      !(ex as Record<string, unknown>).sentenceEn ||
+      typeof (ex as Record<string, unknown>).sentenceJa !== 'string' ||
+      !(ex as Record<string, unknown>).sentenceJa
+    ) {
+      return null;
+    }
+    parsed.push({
+      sentenceEn: (ex as { sentenceEn: string }).sentenceEn,
+      sentenceJa: (ex as { sentenceJa: string }).sentenceJa,
+    });
+  }
+  return parsed;
+}
+
 export const createVerb = async (req: Request, res: Response) => {
-  const { verb, particle, meaningJa, exampleSentence } = req.body ?? {};
-  const fields = { verb, particle, meaningJa, exampleSentence };
+  const { verb, particle, meaningJa, examples } = req.body ?? {};
+  const fields = { verb, particle, meaningJa };
 
   for (const [key, value] of Object.entries(fields)) {
     if (typeof value !== 'string' || !value.trim()) {
@@ -59,8 +85,13 @@ export const createVerb = async (req: Request, res: Response) => {
     }
   }
 
+  const parsedExamples = parseExamples(examples);
+  if (!parsedExamples) {
+    return res.status(400).json({ error: `例文（英文・日本語訳）は${EXAMPLE_COUNT}つ必須です。` });
+  }
+
   try {
-    const created = await verbsService.create({ verb, particle, meaningJa, exampleSentence });
+    const created = await verbsService.create({ verb, particle, meaningJa, examples: parsedExamples });
     res.status(201).json(created);
   } catch (error) {
     console.error('createVerb failed:', error);
@@ -70,18 +101,17 @@ export const createVerb = async (req: Request, res: Response) => {
 
 export const updateVerb = async (req: Request, res: Response) => {
   const { id } = req.params;
-  const { meaningJa, exampleSentence } = req.body ?? {};
+  const { meaningJa, examples } = req.body ?? {};
 
   if (typeof id !== 'string') {
     return res.status(400).json({ error: '不正なIDです。' });
   }
-  if (
-    typeof meaningJa !== 'string' ||
-    !meaningJa.trim() ||
-    typeof exampleSentence !== 'string' ||
-    !exampleSentence.trim()
-  ) {
-    return res.status(400).json({ error: '意味と例文は必須です。' });
+  if (typeof meaningJa !== 'string' || !meaningJa.trim()) {
+    return res.status(400).json({ error: '意味は必須です。' });
+  }
+  const parsedExamples = parseExamples(examples);
+  if (!parsedExamples) {
+    return res.status(400).json({ error: `例文（英文・日本語訳）は${EXAMPLE_COUNT}つ必須です。` });
   }
 
   try {
@@ -89,7 +119,7 @@ export const updateVerb = async (req: Request, res: Response) => {
     if (!existing) {
       return res.status(404).json({ error: '句動詞が見つかりません。' });
     }
-    const updated = await verbsService.update(id, { meaningJa, exampleSentence });
+    const updated = await verbsService.update(id, { meaningJa, examples: parsedExamples });
     res.json(updated);
   } catch (error) {
     console.error('updateVerb failed:', error);

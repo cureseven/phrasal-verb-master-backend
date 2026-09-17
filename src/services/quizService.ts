@@ -5,8 +5,10 @@ export interface NextCardResponse {
   verb: string;
   particle: string;
   meaningJa: string;
-  exampleSentence: string;
+  examples: { sentenceEn: string; sentenceJa: string }[];
 }
+
+const EXAMPLES_INCLUDE = { examples: { orderBy: { order: 'asc' as const } } };
 
 export class QuizService {
   async getNextCard(mode?: string, word?: string): Promise<NextCardResponse> {
@@ -22,10 +24,11 @@ export class QuizService {
 
     let verbs = await prisma.phrasalVerb.findMany({
       where: whereClause,
+      include: EXAMPLES_INCLUDE,
     });
 
     if (verbs.length === 0) {
-      verbs = await prisma.phrasalVerb.findMany();
+      verbs = await prisma.phrasalVerb.findMany({ include: EXAMPLES_INCLUDE });
     }
 
     if (verbs.length === 0) {
@@ -39,7 +42,10 @@ export class QuizService {
       verb: target.verb,
       particle: target.particle,
       meaningJa: target.meaningJa,
-      exampleSentence: target.exampleSentence,
+      examples: target.examples.map((ex) => ({
+        sentenceEn: ex.sentenceEn,
+        sentenceJa: ex.sentenceJa,
+      })),
     };
   }
 }
