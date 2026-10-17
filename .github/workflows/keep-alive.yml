@@ -1,0 +1,20 @@
+name: Keep alive
+
+# Supabase無料プランは一定期間アクセスがないと一時停止されるため、数日おきに本番APIを叩いてDBへアクセスを入れる。
+# 失敗するとGitHubの通知で気づける。
+on:
+  schedule:
+    - cron: '0 3 */3 * *'
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping API and DB
+        run: |
+          for path in /dbhealth /api/quiz/next; do
+            curl --fail --silent --show-error --max-time 120 \
+              --retry 3 --retry-delay 20 --retry-all-errors \
+              "https://phrasal-verb-master-backend.onrender.com${path}" > /dev/null
+          done

@@ -53,6 +53,8 @@ PHRASAL_VERB_MASTER_SPEC.mdのFunctional Requirements・画面リスト（SCR-01
   - ⚠️ 人間の作業待ち: Vercelプロジェクトに`admin.phrasalverb.cureseven.tokyo`ドメインを追加（DNS設定含む）、Renderの`FRONTEND_URL`をカンマ区切りで両ドメインに更新、Vercelの`ADMIN_URL_SLUG`環境変数は不要になったため削除して問題ない。
 - `multiple-examples`: 各句動詞の例文を1つから3つに増やし、例文ごとの日本語訳もDBに保存するように変更。`phrasal_verbs.example_sentence`カラムを廃止し、正規化した`PhrasalVerbExample`テーブル（`sentence_en`/`sentence_ja`/`order`、`onDelete: Cascade`）に移行。既存182件の句動詞は、既存の例文の日本語訳＋新規2例文をAIで生成し`prisma/backfillExamples.ts`（非破壊的・idempotent、verb+particleで既存行に紐付け）でバックフィル。`prisma/seed.ts`と`backfillExamples.ts`はデータ重複を避けるため共有データファイル`prisma/phrasalVerbsData.ts`を参照する構成に変更。フロント側はフラッシュカード/クイズ画面で3例文＋日本語訳を全て表示、一覧画面・管理画面一覧は先頭の例文のみ表示、管理画面の登録/編集フォームは3例文×英文/日本語訳の入力欄に変更。backend PR#14, frontend PR#27（マージ済み予定）
   - ⚠️ 人間の作業待ち: 本番マイグレーション適用の順序が重要（① `phrasal_verb_examples`テーブル追加 → ② `npm run backfill:examples`を本番DBに対して実行 → ③ `example_sentence`カラム削除、の3ステップを必ずこの順で。②を飛ばして③を先に適用すると例文データが失われる）。
+- `keep-alive-workflow`: Supabase無料プランが一定期間アクセスなしで一時停止し、本番APIが500になったこと（2026-10-17確認）への再発防止。`.github/workflows/keep-alive.yml`が3日おきに本番の`/dbhealth`と`/api/quiz/next`を叩いてDBへアクセスを入れる（手動実行も可）。失敗するとGitHubの通知で気づける。
+  - 注意: 公開リポジトリのscheduleワークフローは、リポジトリに60日間アクティビティがないと自動で無効化される。
 
 ## 残タスク・懸念事項（人間の判断待ち）
 - スタッシュに退避したまま放置している変更あり（backendリポジトリ）: `prisma/schema.prisma`へのdirectUrl追加、`create_tables.sql`、`package.json`のseedスクリプト変更。`git stash list`で確認できる。今回のタスクとは無関係な既存の作業中変更と判断し、意図的に触れていない。
