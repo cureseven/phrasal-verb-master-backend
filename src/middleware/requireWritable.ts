@@ -7,7 +7,7 @@ import { prisma } from '../lib/prisma.js';
  */
 export async function requireWritable(req: Request, res: Response, next: NextFunction) {
   if (!req.userId) {
-    return res.status(401).json({ error: '認証が必要です。' });
+    return res.status(401).json({ error: '認証が必要です。', code: 'AUTH_REQUIRED' });
   }
 
   try {
@@ -16,11 +16,13 @@ export async function requireWritable(req: Request, res: Response, next: NextFun
       select: { isReadOnly: true },
     });
     if (status?.isReadOnly) {
-      return res.status(403).json({ error: 'このアカウントは現在、閲覧のみご利用いただけます。' });
+      return res
+        .status(403)
+        .json({ error: 'このアカウントは現在、閲覧のみご利用いただけます。', code: 'READ_ONLY_ACCOUNT' });
     }
     next();
   } catch (error) {
     console.error('requireWritable failed:', error);
-    res.status(500).json({ error: 'サーバーエラーが発生しました。' });
+    res.status(500).json({ error: 'サーバーエラーが発生しました。', code: 'SERVER_ERROR' });
   }
 }

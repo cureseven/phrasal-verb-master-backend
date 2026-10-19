@@ -6,13 +6,13 @@ import { USER_TOKEN_AUDIENCE } from '../services/authService.js';
 export function requireAuth(req: Request, res: Response, next: NextFunction) {
   const token = req.cookies?.[AUTH_COOKIE_NAME];
   if (!token) {
-    return res.status(401).json({ error: '認証が必要です。' });
+    return res.status(401).json({ error: '認証が必要です。', code: 'AUTH_REQUIRED' });
   }
 
   const secret = process.env.JWT_SECRET;
   if (!secret) {
     console.error('JWT_SECRET is not set');
-    return res.status(500).json({ error: 'サーバー設定エラーです。' });
+    return res.status(500).json({ error: 'サーバー設定エラーです。', code: 'SERVER_ERROR' });
   }
 
   let userId: unknown;
@@ -20,10 +20,12 @@ export function requireAuth(req: Request, res: Response, next: NextFunction) {
     const payload = jwt.verify(token, secret, { audience: USER_TOKEN_AUDIENCE });
     userId = typeof payload === 'object' ? payload.userId : undefined;
   } catch {
-    return res.status(401).json({ error: '認証の有効期限が切れています。再度ログインしてください。' });
+    return res
+      .status(401)
+      .json({ error: '認証の有効期限が切れています。再度ログインしてください。', code: 'SESSION_EXPIRED' });
   }
   if (typeof userId !== 'string') {
-    return res.status(401).json({ error: '認証が必要です。' });
+    return res.status(401).json({ error: '認証が必要です。', code: 'AUTH_REQUIRED' });
   }
 
   req.userId = userId;

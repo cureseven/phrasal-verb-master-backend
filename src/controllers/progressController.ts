@@ -5,12 +5,12 @@ const progressService = new ProgressService();
 
 export const markProgress = async (req: Request, res: Response) => {
   if (!req.userId) {
-    return res.status(401).json({ error: '認証が必要です。' });
+    return res.status(401).json({ error: '認証が必要です。', code: 'AUTH_REQUIRED' });
   }
 
   const { phrasalVerbId, status } = req.body ?? {};
   if (typeof phrasalVerbId !== 'string' || typeof status !== 'string') {
-    return res.status(400).json({ error: 'phrasalVerbIdとstatusは必須です。' });
+    return res.status(400).json({ error: 'phrasalVerbIdとstatusは必須です。', code: 'BAD_REQUEST' });
   }
 
   try {
@@ -18,16 +18,16 @@ export const markProgress = async (req: Request, res: Response) => {
     res.json(result);
   } catch (error) {
     if (error instanceof ProgressError) {
-      return res.status(error.status).json({ error: error.message });
+      return res.status(error.status).json({ error: error.message, code: error.code });
     }
     console.error('markProgress failed:', error);
-    res.status(500).json({ error: '進捗の更新に失敗しました。' });
+    res.status(500).json({ error: '進捗の更新に失敗しました。', code: 'SERVER_ERROR' });
   }
 };
 
 export const getProgressSummary = async (req: Request, res: Response) => {
   if (!req.userId) {
-    return res.status(401).json({ error: '認証が必要です。' });
+    return res.status(401).json({ error: '認証が必要です。', code: 'AUTH_REQUIRED' });
   }
 
   try {
@@ -35,6 +35,6 @@ export const getProgressSummary = async (req: Request, res: Response) => {
     res.json(summary);
   } catch (error) {
     console.error('getProgressSummary failed:', error);
-    res.status(500).json({ error: '進捗サマリーの取得に失敗しました。' });
+    res.status(500).json({ error: '進捗サマリーの取得に失敗しました。', code: 'SERVER_ERROR' });
   }
 };

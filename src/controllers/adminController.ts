@@ -1,7 +1,8 @@
 import { Request, Response } from 'express';
 import { AdminService } from '../services/adminService.js';
-import { VerbsService } from '../services/verbsService.js';
+import { ExampleInput, LocalizedText, VerbsService } from '../services/verbsService.js';
 import { prisma } from '../lib/prisma.js';
+import { SUPPORTED_LOCALES } from '../lib/locale.js';
 
 const adminService = new AdminService();
 const verbsService = new VerbsService();
@@ -51,47 +52,88 @@ export const unrestrictUser = (req: Request, res: Response) => updateReadOnly(re
 
 const EXAMPLE_COUNT = 3;
 
-function parseExamples(examples: unknown): { sentenceEn: string; sentenceJa: string }[] | null {
+/** { ja: '...', zh: '...' } の形で、対応する全言語が空でない文字列になっているかを確認する */
+function parseLocalizedText(value: unknown): LocalizedText | null {
+  if (typeof value !== 'object' || value === null) {
+    return null;
+  }
+  const record = value as Record<string, unknown>;
+  const result: Partial<LocalizedText> = {};
+  for (const locale of SUPPORTED_LOCALES) {
+    const text = record[locale];
+    if (typeof text !== 'string' || !text.trim()) {
+      return null;
+    }
+    result[locale] = text;
+  }
+  return result as LocalizedText;
+}
+
+function parseExamples(examples: unknown): ExampleInput[] | null {
   if (!Array.isArray(examples) || examples.length !== EXAMPLE_COUNT) {
     return null;
   }
-  const parsed: { sentenceEn: string; sentenceJa: string }[] = [];
+  const parsed: ExampleInput[] = [];
   for (const ex of examples) {
-    if (
-      typeof ex !== 'object' ||
-      ex === null ||
-      typeof (ex as Record<string, unknown>).sentenceEn !== 'string' ||
-      !(ex as Record<string, unknown>).sentenceEn ||
-      typeof (ex as Record<string, unknown>).sentenceJa !== 'string' ||
-      !(ex as Record<string, unknown>).sentenceJa
-    ) {
+    if (typeof ex !== 'object' || ex === null) {
       return null;
     }
-    parsed.push({
-      sentenceEn: (ex as { sentenceEn: string }).sentenceEn,
-      sentenceJa: (ex as { sentenceJa: string }).sentenceJa,
-    });
+    const { sentenceEn, translations } = ex as Record<string, unknown>;
+    const parsedTranslations = parseLocalizedText(translations);
+    if (typeof sentenceEn !== 'string' || !sentenceEn.trim() || !parsedTranslations) {
+      return null;
+    }
+    parsed.push({ sentenceEn, translations: parsedTranslations });
   }
   return parsed;
 }
 
-export const createVerb = async (req: Request, res: Response) => {
-  const { verb, particle, meaningJa, examples } = req.body ?? {};
-  const fields = { verb, particle, meaningJa };
+const MEANINGS_REQUIRED_MESSAGE = '意味（日本語・中国語）は必須です。';
+const EXAMPLES_REQUIRED_MESSAGE = `例文（英文・日本語訳・中国語訳）は${EXAMPLE_COUNT}つ必須です。`;
 
-  for (const [key, value] of Object.entries(fields)) {
+export const getVerb = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  if (typeof id !== 'string') {
+    return res.status(400).json({ error: '不正なIDです。' });
+  }
+
+  try {
+    const verb = await verbsService.getByIdForAdmin(id);
+    if (!verb) {
+      return res.status(404).json({ error: '句動詞が見つかりません。' });
+    }
+    res.json(verb);
+  } catch (error) {
+    console.error('getVerb failed:', error);
+    res.status(500).json({ error: '句動詞の取得に失敗しました。' });
+  }
+};
+
+export const createVerb = async (req: Request, res: Response) => {
+  const { verb, particle, meanings, examples } = req.body ?? {};
+
+  for (const [key, value] of Object.entries({ verb, particle })) {
     if (typeof value !== 'string' || !value.trim()) {
       return res.status(400).json({ error: `${key}は必須です。` });
     }
   }
 
+  const parsedMeanings = parseLocalizedText(meanings);
+  if (!parsedMeanings) {
+    return res.status(400).json({ error: MEANINGS_REQUIRED_MESSAGE });
+  }
   const parsedExamples = parseExamples(examples);
   if (!parsedExamples) {
-    return res.status(400).json({ error: `例文（英文・日本語訳）は${EXAMPLE_COUNT}つ必須です。` });
+    return res.status(400).json({ error: EXAMPLES_REQUIRED_MESSAGE });
   }
 
   try {
-    const created = await verbsService.create({ verb, particle, meaningJa, examples: parsedExamples });
+    const created = await verbsService.create({
+      verb,
+      particle,
+      meanings: parsedMeanings,
+      examples: parsedExamples,
+    });
     res.status(201).json(created);
   } catch (error) {
     console.error('createVerb failed:', error);
@@ -101,25 +143,25 @@ export const createVerb = async (req: Request, res: Response) => {
 
 export const updateVerb = async (req: Request, res: Response) => {
   const { id } = req.params;
-  const { meaningJa, examples } = req.body ?? {};
+  const { meanings, examples } = req.body ?? {};
 
   if (typeof id !== 'string') {
     return res.status(400).json({ error: '不正なIDです。' });
   }
-  if (typeof meaningJa !== 'string' || !meaningJa.trim()) {
-    return res.status(400).json({ error: '意味は必須です。' });
+  const parsedMeanings = parseLocalizedText(meanings);
+  if (!parsedMeanings) {
+    return res.status(400).json({ error: MEANINGS_REQUIRED_MESSAGE });
   }
   const parsedExamples = parseExamples(examples);
   if (!parsedExamples) {
-    return res.status(400).json({ error: `例文（英文・日本語訳）は${EXAMPLE_COUNT}つ必須です。` });
+    return res.status(400).json({ error: EXAMPLES_REQUIRED_MESSAGE });
   }
 
   try {
-    const existing = await verbsService.getById(id);
-    if (!existing) {
+    if (!(await verbsService.exists(id))) {
       return res.status(404).json({ error: '句動詞が見つかりません。' });
     }
-    const updated = await verbsService.update(id, { meaningJa, examples: parsedExamples });
+    const updated = await verbsService.update(id, { meanings: parsedMeanings, examples: parsedExamples });
     res.json(updated);
   } catch (error) {
     console.error('updateVerb failed:', error);
@@ -134,8 +176,7 @@ export const deleteVerb = async (req: Request, res: Response) => {
   }
 
   try {
-    const existing = await verbsService.getById(id);
-    if (!existing) {
+    if (!(await verbsService.exists(id))) {
       return res.status(404).json({ error: '句動詞が見つかりません。' });
     }
     await verbsService.delete(id);

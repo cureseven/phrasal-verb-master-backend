@@ -20,12 +20,12 @@ export class AdminAuthService {
   async login(email: string, password: string) {
     const admin = await prisma.admin.findUnique({ where: { email } });
     if (!admin) {
-      throw new AuthError('メールアドレスまたはパスワードが正しくありません。', 401);
+      throw new AuthError('メールアドレスまたはパスワードが正しくありません。', 401, 'INVALID_CREDENTIALS');
     }
 
     const isValid = await bcrypt.compare(password, admin.passwordHash);
     if (!isValid) {
-      throw new AuthError('メールアドレスまたはパスワードが正しくありません。', 401);
+      throw new AuthError('メールアドレスまたはパスワードが正しくありません。', 401, 'INVALID_CREDENTIALS');
     }
 
     const token = jwt.sign({ adminId: admin.id }, getJwtSecret(), {
