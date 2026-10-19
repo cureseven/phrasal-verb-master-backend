@@ -10,6 +10,7 @@
     "start": "node dist/index.js",
     "seed:admin": "tsx prisma/seedAdmin.ts",
     "backfill:examples": "tsx prisma/backfillExamples.ts",
+    "backfill:translations": "tsx prisma/backfillTranslations.ts",
     "postinstall": "prisma skills sync || exit 0"
   },
   "keywords": [],
