@@ -6,6 +6,9 @@ import { AuthError } from './authService.js';
 const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_EXPIRES_IN = '7d';
 
+// 一般ユーザー用トークン（USER_TOKEN_AUDIENCE）と区別するためのaudience
+export const ADMIN_TOKEN_AUDIENCE = 'admin';
+
 function getJwtSecret(): string {
   if (!JWT_SECRET) {
     throw new Error('JWT_SECRET is not set');
@@ -27,6 +30,7 @@ export class AdminAuthService {
 
     const token = jwt.sign({ adminId: admin.id }, getJwtSecret(), {
       expiresIn: JWT_EXPIRES_IN,
+      audience: ADMIN_TOKEN_AUDIENCE,
     });
 
     return { token, admin: { id: admin.id, email: admin.email } };

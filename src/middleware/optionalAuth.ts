@@ -1,10 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import { AUTH_COOKIE_NAME } from '../controllers/authController.js';
-
-interface AuthTokenPayload {
-  userId: string;
-}
+import { USER_TOKEN_AUDIENCE } from '../services/authService.js';
 
 /**
  * requireAuthと異なり、未ログイン・トークン無効でも処理を継続する。
@@ -16,8 +13,10 @@ export function optionalAuth(req: Request, _res: Response, next: NextFunction) {
 
   if (token && secret) {
     try {
-      const payload = jwt.verify(token, secret) as AuthTokenPayload;
-      req.userId = payload.userId;
+      const payload = jwt.verify(token, secret, { audience: USER_TOKEN_AUDIENCE });
+      if (typeof payload === 'object' && typeof payload.userId === 'string') {
+        req.userId = payload.userId;
+      }
     } catch {
       // 無効なトークンは無視して未ログイン扱いにする
     }

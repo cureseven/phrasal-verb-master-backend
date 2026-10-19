@@ -6,6 +6,10 @@ const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_EXPIRES_IN = '7d';
 const SALT_ROUNDS = 10;
 
+// 一般ユーザー用と管理者用のトークンは同じ秘密鍵で署名するため、audienceで区別する。
+// これが無いと、一般ユーザーのトークンを管理者用Cookieに入れるだけで管理者APIを通過できてしまう。
+export const USER_TOKEN_AUDIENCE = 'user';
+
 export class AuthError extends Error {
   constructor(
     message: string,
@@ -50,6 +54,7 @@ export class AuthService {
 
     const token = jwt.sign({ userId: user.id }, getJwtSecret(), {
       expiresIn: JWT_EXPIRES_IN,
+      audience: USER_TOKEN_AUDIENCE,
     });
 
     return { token, user: { id: user.id, email: user.email, username: user.username } };
