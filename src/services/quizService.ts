@@ -1,18 +1,12 @@
-import { prisma } from '../lib/prisma.js';
+import { Prisma } from '@prisma/client';
+import { Locale } from '../lib/locale.js';
+import { PublicPhrasalVerb, toPublicVerb, VerbsService } from './verbsService.js';
 
-export interface NextCardResponse {
-  id: string;
-  verb: string;
-  particle: string;
-  meaningJa: string;
-  examples: { sentenceEn: string; sentenceJa: string }[];
-}
-
-const EXAMPLES_INCLUDE = { examples: { orderBy: { order: 'asc' as const } } };
+const verbsService = new VerbsService();
 
 export class QuizService {
-  async getNextCard(mode?: string, word?: string): Promise<NextCardResponse> {
-    let whereClause = {};
+  async getNextCard(locale: Locale, mode?: string, word?: string): Promise<PublicPhrasalVerb> {
+    let whereClause: Prisma.PhrasalVerbWhereInput = {};
 
     if (mode && word) {
       if (mode === 'verb_fixed') {
@@ -22,13 +16,10 @@ export class QuizService {
       }
     }
 
-    let verbs = await prisma.phrasalVerb.findMany({
-      where: whereClause,
-      include: EXAMPLES_INCLUDE,
-    });
+    let verbs = await verbsService.findForQuiz(whereClause);
 
     if (verbs.length === 0) {
-      verbs = await prisma.phrasalVerb.findMany({ include: EXAMPLES_INCLUDE });
+      verbs = await verbsService.findForQuiz({});
     }
 
     if (verbs.length === 0) {
@@ -36,16 +27,6 @@ export class QuizService {
     }
 
     const target = verbs[Math.floor(Math.random() * verbs.length)];
-
-    return {
-      id: target.id,
-      verb: target.verb,
-      particle: target.particle,
-      meaningJa: target.meaningJa,
-      examples: target.examples.map((ex) => ({
-        sentenceEn: ex.sentenceEn,
-        sentenceJa: ex.sentenceJa,
-      })),
-    };
+    return toPublicVerb(target, locale);
   }
 }

@@ -15,11 +15,13 @@ async function main() {
         verb: item.verb,
         particle: item.particle,
         meaningJa: item.meaningJa,
+        translations: { create: [{ locale: 'ja', meaning: item.meaningJa }] },
         examples: {
           create: item.examples.map((ex, i) => ({
             sentenceEn: ex.en,
             sentenceJa: ex.ja,
             order: i + 1,
+            translations: { create: [{ locale: 'ja', sentence: ex.ja }] },
           })),
         },
       },

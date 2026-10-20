@@ -1,10 +1,12 @@
 import { LearningStatus } from '@prisma/client';
 import { prisma } from '../lib/prisma.js';
+import { ErrorCode } from '../lib/errorCode.js';
 
 export class ProgressError extends Error {
   constructor(
     message: string,
-    public status: number
+    public status: number,
+    public code: ErrorCode
   ) {
     super(message);
   }
@@ -26,12 +28,12 @@ export class ProgressService {
   async mark(userId: string, phrasalVerbId: string, status: string) {
     const learningStatus = STATUS_MAP[status];
     if (!learningStatus) {
-      throw new ProgressError('statusは"memorized"か"review_needed"を指定してください。', 400);
+      throw new ProgressError('statusは"memorized"か"review_needed"を指定してください。', 400, 'BAD_REQUEST');
     }
 
     const verb = await prisma.phrasalVerb.findUnique({ where: { id: phrasalVerbId } });
     if (!verb) {
-      throw new ProgressError('句動詞が見つかりません。', 404);
+      throw new ProgressError('句動詞が見つかりません。', 404, 'NOT_FOUND');
     }
 
     const result = await prisma.userPhraseStatus.upsert({

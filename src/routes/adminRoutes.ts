@@ -3,6 +3,7 @@ import {
   createVerb,
   deleteVerb,
   getStats,
+  getVerb,
   listUsers,
   restrictUser,
   unrestrictUser,
@@ -18,6 +19,7 @@ router.get('/stats', getStats);
 router.get('/users', listUsers);
 router.post('/users/:id/restrict', restrictUser);
 router.post('/users/:id/unrestrict', unrestrictUser);
+router.get('/verbs/:id', getVerb);
 router.post('/verbs', createVerb);
 router.patch('/verbs/:id', updateVerb);
 router.delete('/verbs/:id', deleteVerb);

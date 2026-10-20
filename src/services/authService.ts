@@ -1,6 +1,7 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { prisma } from '../lib/prisma.js';
+import { ErrorCode } from '../lib/errorCode.js';
 
 const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_EXPIRES_IN = '7d';
@@ -13,7 +14,8 @@ export const USER_TOKEN_AUDIENCE = 'user';
 export class AuthError extends Error {
   constructor(
     message: string,
-    public status: number
+    public status: number,
+    public code: ErrorCode
   ) {
     super(message);
   }
@@ -30,7 +32,7 @@ export class AuthService {
   async signup(email: string, password: string) {
     const existing = await prisma.user.findUnique({ where: { email } });
     if (existing) {
-      throw new AuthError('このメールアドレスは既に登録されています。', 409);
+      throw new AuthError('このメールアドレスは既に登録されています。', 409, 'EMAIL_TAKEN');
     }
 
     const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
@@ -44,12 +46,12 @@ export class AuthService {
   async login(email: string, password: string) {
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user) {
-      throw new AuthError('メールアドレスまたはパスワードが正しくありません。', 401);
+      throw new AuthError('メールアドレスまたはパスワードが正しくありません。', 401, 'INVALID_CREDENTIALS');
     }
 
     const isValid = await bcrypt.compare(password, user.passwordHash);
     if (!isValid) {
-      throw new AuthError('メールアドレスまたはパスワードが正しくありません。', 401);
+      throw new AuthError('メールアドレスまたはパスワードが正しくありません。', 401, 'INVALID_CREDENTIALS');
     }
 
     const token = jwt.sign({ userId: user.id }, getJwtSecret(), {
@@ -72,12 +74,12 @@ export class AuthService {
   async deleteAccount(userId: string, password: string) {
     const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user) {
-      throw new AuthError('ユーザーが見つかりません。', 404);
+      throw new AuthError('ユーザーが見つかりません。', 404, 'NOT_FOUND');
     }
 
     const isValid = await bcrypt.compare(password, user.passwordHash);
     if (!isValid) {
-      throw new AuthError('パスワードが正しくありません。', 401);
+      throw new AuthError('パスワードが正しくありません。', 401, 'WRONG_PASSWORD');
     }
 
     await prisma.user.delete({ where: { id: userId } });

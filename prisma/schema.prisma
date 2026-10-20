@@ -16,8 +16,24 @@ model PhrasalVerb {
 
   userPhraseStatuses UserPhraseStatus[]
   examples           PhrasalVerbExample[]
+  translations       PhrasalVerbTranslation[]
 
   @@map("phrasal_verbs")
+}
+
+// 句動詞の意味を言語ごとに持つ。localeは src/lib/locale.ts の SUPPORTED_LOCALES のいずれか
+// （言語を増やしてもマイグレーション不要にするためenumにはしない）。
+model PhrasalVerbTranslation {
+  id            String   @id @default(uuid())
+  phrasalVerbId String   @map("phrasal_verb_id")
+  locale        String
+  meaning       String
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  phrasalVerb PhrasalVerb @relation(fields: [phrasalVerbId], references: [id], onDelete: Cascade)
+
+  @@unique([phrasalVerbId, locale])
+  @@map("phrasal_verb_translations")
 }
 
 model PhrasalVerbExample {
@@ -28,10 +44,25 @@ model PhrasalVerbExample {
   order         Int
   createdAt     DateTime @default(now()) @map("created_at")
 
-  phrasalVerb PhrasalVerb @relation(fields: [phrasalVerbId], references: [id], onDelete: Cascade)
+  phrasalVerb  PhrasalVerb                     @relation(fields: [phrasalVerbId], references: [id], onDelete: Cascade)
+  translations PhrasalVerbExampleTranslation[]
 
   @@unique([phrasalVerbId, order])
   @@map("phrasal_verb_examples")
+}
+
+// 例文の訳を言語ごとに持つ。
+model PhrasalVerbExampleTranslation {
+  id        String   @id @default(uuid())
+  exampleId String   @map("example_id")
+  locale    String
+  sentence  String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  example PhrasalVerbExample @relation(fields: [exampleId], references: [id], onDelete: Cascade)
+
+  @@unique([exampleId, locale])
+  @@map("phrasal_verb_example_translations")
 }
 
 model User {
