@@ -23,3 +23,5 @@ Thumbs.db
 *.db-journal
 *.sqlite
 *.sqlite-journal
+# Prisma generated client (postinstall / prisma generate で作成)
+src/generated/
