@@ -1,7 +1,7 @@
+import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
-import dotenv from 'dotenv';
 import authRoutes from './routes/authRoutes.js';
 import progressRoutes from './routes/progressRoutes.js';
 import quizRoutes from './routes/quizRoutes.js';
@@ -9,8 +9,6 @@ import verbsRoutes from './routes/verbsRoutes.js';
 import adminAuthRoutes from './routes/adminAuthRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
 import { prisma } from './lib/prisma.js';
-
-dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3001;

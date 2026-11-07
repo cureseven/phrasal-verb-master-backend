@@ -1,4 +1,4 @@
-import { Prisma } from '@prisma/client';
+import { Prisma } from '../generated/prisma/client.js';
 import { Locale } from '../lib/locale.js';
 import { PublicPhrasalVerb, toPublicVerb, VerbsService } from './verbsService.js';
 

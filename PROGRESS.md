@@ -56,6 +56,11 @@ PHRASAL_VERB_MASTER_SPEC.mdのFunctional Requirements・画面リスト（SCR-01
 - `keep-alive-workflow`: Supabase無料プランが一定期間アクセスなしで一時停止し、本番APIが500になったこと（2026-10-17確認）への再発防止。`.github/workflows/keep-alive.yml`が3日おきに本番の`/dbhealth`と`/api/quiz/next`を叩いてDBへアクセスを入れる（手動実行も可）。失敗するとGitHubの通知で気づける。
   - 注意: 公開リポジトリのscheduleワークフローは、リポジトリに60日間アクティビティがないと自動で無効化される。
 
+- `prisma-7-upgrade`: Prisma 6.19.3 → 7.10.1 に更新。Rust製エンジンが無くなり、`pg`ドライバ（`@prisma/adapter-pg`）経由で接続する構成に変更。`generator`は`prisma-client`で`src/generated/prisma`に生成（gitignore、`postinstall`の`prisma generate`で作成）、DB接続のURLは`prisma.config.ts`（CLI用）とアプリ側の`src/lib/prismaClient.ts`に分離。`.env`は自動で読まれなくなったため`dotenv`を明示的に読み込む。
+  - 既存の`DATABASE_URL`（`pgbouncer=true&sslmode=require&statement_cache_size=0`などPrisma 6向けのパラメータ付き）は、`prismaClient.ts`が接続文字列とSSL設定に分解して使うため、Renderの環境変数は変更不要。SSLは証明書を検証しない暗号化のみ（Prisma 6の`sslmode=require`と同じ）。
+  - CLIでDBに接続するコマンド（`migrate deploy`、バックフィルなど）は、これまで通り`DATABASE_URL`を指定して実行する。`migrate diff`は`--from-url`が廃止され`--from-config-datasource`になった。
+  - CIのNodeを20→22に変更（Prisma 7はNode 20.19以上が必要）。Renderの Node バージョンが20.19未満なら`NODE_VERSION=22`を設定する。
+
 ## 残タスク・懸念事項（人間の判断待ち）
 - スタッシュに退避したまま放置している変更あり（backendリポジトリ）: `prisma/schema.prisma`へのdirectUrl追加、`create_tables.sql`、`package.json`のseedスクリプト変更。`git stash list`で確認できる。今回のタスクとは無関係な既存の作業中変更と判断し、意図的に触れていない。
 - ブランチ保護の`strict`（マージ前にmainと同期必須）は両リポジトリでfalseに変更済み。並行してPRを進める運用と相性が悪かったため。

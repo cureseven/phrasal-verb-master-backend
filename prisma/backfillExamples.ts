@@ -1,7 +1,8 @@
-import { PrismaClient } from '@prisma/client';
+import 'dotenv/config';
+import { createPrismaClient } from '../src/lib/prismaClient.js';
 import { phrasalVerbsData } from './phrasalVerbsData.js';
 
-const prisma = new PrismaClient();
+const prisma = createPrismaClient(process.env.DATABASE_URL);
 
 // 既存のphrasal_verbsテーブルとはverb+particleで突き合わせ、例文が未登録の行にだけ
 // PhrasalVerbExampleを追加する（idの変更やデータ削除は行わない、非破壊的なスクリプト）。

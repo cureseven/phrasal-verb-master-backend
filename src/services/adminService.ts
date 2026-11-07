@@ -1,4 +1,4 @@
-import { LearningStatus } from '@prisma/client';
+import { LearningStatus } from '../generated/prisma/client.js';
 import { prisma } from '../lib/prisma.js';
 
 export interface AdminStats {

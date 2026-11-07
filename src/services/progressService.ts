@@ -1,4 +1,4 @@
-import { LearningStatus } from '@prisma/client';
+import { LearningStatus } from '../generated/prisma/client.js';
 import { prisma } from '../lib/prisma.js';
 import { ErrorCode } from '../lib/errorCode.js';
 

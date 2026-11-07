@@ -1,4 +1,4 @@
-import { LearningStatus, Prisma } from '@prisma/client';
+import { LearningStatus, Prisma } from '../generated/prisma/client.js';
 import { prisma } from '../lib/prisma.js';
 import { DEFAULT_LOCALE, Locale, SUPPORTED_LOCALES } from '../lib/locale.js';
 
